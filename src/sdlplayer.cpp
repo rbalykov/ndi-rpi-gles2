@@ -1,11 +1,11 @@
 
-#include "SDLMonitor.h"
+#include <VideoMonitor.h>
 #include <iostream>
+
+#include "NDIReceiver.h"
 
 int main(int argc, char *argv[])
 {
-	SDLMonitor Monitor;
-	Monitor.Init();
-
-	return 0;
+	VideoMonitor Monitor;
+	return Monitor.Run();
 }

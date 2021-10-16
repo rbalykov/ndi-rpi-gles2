@@ -17,14 +17,16 @@ public:
 	~NDIReceiver();
 	bool Init();
 	bool Discover();
+	bool Capture();
 
 private:
 
+	bool is_active;
 	NDIlib_find_instance_t finder;
-	NDIlib_framesync_instance_t sync;
-	NDIlib_recv_create_v3_t rxinfo;
+	NDIlib_recv_create_v3_t rx_desc;
 	NDIlib_recv_instance_t rx;
-	NDIlib_source_t * sources;
+	NDIlib_framesync_instance_t sync;
+	const NDIlib_source_t * sources;
 	unsigned int src_count;
 };
 

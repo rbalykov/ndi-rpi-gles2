@@ -11,28 +11,38 @@
 #include <string>
 #include <SDL2/SDL.h>
 
-class SDLMonitor
+class VideoMonitor
 {
 public:
-	SDLMonitor();
-	~SDLMonitor();
+	VideoMonitor();
+	~VideoMonitor();
 
-	static const unsigned FHD_W = 1920;
-	static const unsigned FHD_H = 1080;
-
-	void Show();
-	void Hide();
-	bool Init();
+	int Run();
 
 private:
+	bool Init();
+	void Cleanup();
+	void Update();
+	void Render();
+	void ProcessEvent(const SDL_Event *Event);
+
+	bool ProbeDisplay();
 
 	SDL_Window *window;
 	SDL_Surface *surface;
 	SDL_Texture *texture;
 	SDL_Renderer *renderer;
 	std::string title;
-	unsigned int xpos, ypos, width, height;
+
+	SDL_Rect output;
+	SDL_DisplayMode dm;
 	bool fullscreen;
+
+	static const unsigned FHD_W = 1920;
+	static const unsigned FHD_H = 1080;
+
+	bool run;
 };
+
 
 #endif /* SRC_SDLVIDEO_H_ */
