@@ -10,6 +10,7 @@
 
 #include <string>
 #include <SDL2/SDL.h>
+#include "NDIReceiver.h"
 
 class VideoMonitor
 {
@@ -26,7 +27,6 @@ private:
 	void Render();
 	void ProcessEvent(const SDL_Event *Event);
 
-	bool ProbeDisplay();
 
 	SDL_Window *window;
 	SDL_Surface *surface;
@@ -34,9 +34,12 @@ private:
 	SDL_Renderer *renderer;
 	std::string title;
 
-	SDL_Rect output;
+	SDL_Rect outputRect;
 	SDL_DisplayMode dm;
+	int display_index;
 	bool fullscreen;
+
+	NDIReceiver receiver;
 
 	static const unsigned FHD_W = 1920;
 	static const unsigned FHD_H = 1080;

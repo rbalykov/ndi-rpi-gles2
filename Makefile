@@ -1,6 +1,6 @@
 PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-OBJS = sdlplayer.o NDIReceiver.o SDLMonitor.o
+OBJS = sdlplayer.o NDIReceiver.o VideoMonitor.o Log.o
 
 #ifeq ($(BUILD_MODE),debug)
 #	CFLAGS += -g

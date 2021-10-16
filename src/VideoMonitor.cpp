@@ -6,6 +6,7 @@
  */
 
 #include <VideoMonitor.h>
+#include <Log.h>
 #include <iostream>
 #include <stdint.h>
 #include "SDL2/SDL_events.h"
@@ -16,10 +17,7 @@ using namespace std;
 VideoMonitor::VideoMonitor()
 {
 	run = true;
-	output.x = 0;
-	output.y = 0;
-	output.w = FHD_W/4;
-	output.h = FHD_H/4;
+	display_index = 0;
 	fullscreen = false;
 	title = "Hello world!";
 
@@ -64,7 +62,7 @@ void VideoMonitor::ProcessEvent(const SDL_Event *Event)
 
 void VideoMonitor::Update()
 {
-
+	receiver.Discover();
 }
 
 void VideoMonitor::Render()
@@ -73,10 +71,10 @@ void VideoMonitor::Render()
 }
 void VideoMonitor::Cleanup()
 {
-	if (renderer)
-		SDL_DestroyRenderer(renderer);
 	if (texture)
 		SDL_DestroyTexture(texture);
+	if (renderer)
+		SDL_DestroyRenderer(renderer);
     if (window)
     	SDL_DestroyWindow(window);
     SDL_Quit();
@@ -84,20 +82,65 @@ void VideoMonitor::Cleanup()
 
 bool VideoMonitor::Init()
 {
-	if ( SDL_Init(SDL_INIT_EVERYTHING) != 0)
+	if ( 0 != SDL_Init(SDL_INIT_EVERYTHING))
+	{
+		Log::SDLFault("SDL_Init");
 		return false;
+	}
+	if (0 != SDL_GetDesktopDisplayMode(display_index, &dm))
+	{
+		Log::SDLFault("SDL_GetDesktopDisplayMode");
+		return false;
+	}
+	if (0 != SDL_GetDisplayBounds(display_index, &outputRect))
+	{
+		Log::SDLFault("SDL_GetDisplayBounds");
+		return false;
+	}
+	SDL_ShowCursor(SDL_DISABLE);
+	window = SDL_CreateWindow(title.c_str(), outputRect.x, outputRect.y,
+			outputRect.w/4, outputRect.h/4,
+			SDL_WINDOW_SHOWN);
+	if (window == NULL)
+	{
+		Log::SDLFault("SDL_CreateWindow");
+		return false;
+	}
+	renderer = SDL_CreateRenderer(window, -1,
+			SDL_RENDERER_ACCELERATED);
+	if (renderer == NULL)
+	{
+		Log::SDLFault("SDL_CreateRenderer");
+		return false;
+	}
 
+//	SDL_CreateWindowAndRenderer(outputRect.w, outputRect.h,
+//		SDL_WINDOW_SHOWN ,
+//		&window, &renderer);
+//	if ((!window) || (!renderer))
+//	{
+//		Log::SDLFault("SDL_CreateWindowAndRenderer");
+//		return false;
+//	}
+	SDL_RenderClear(renderer);
+	SDL_RenderPresent(renderer);
+	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+			SDL_TEXTUREACCESS_STREAMING , outputRect.w, outputRect.h);
+	if (!texture)
+	{
+		Log::SDLFault("SDL_CreateTexture");
+		return false;
+	}
+
+	if (!receiver.Init())
+	{
+		Log::Fault("NDIReceiver.Init");
+		return false;
+	}
 
 	return true;
 }
 
-bool VideoMonitor::ProbeDisplay()
-{
-	if (SDL_GetDesktopDisplayMode(index, &dm) != 0)
-		return false;
-
-	return true;
-}
 
 /*
  * 	SDL_CreateWindowAndRenderer(FHD_W/4, FHD_H/4,

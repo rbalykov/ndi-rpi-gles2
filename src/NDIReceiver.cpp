@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "NDIReceiver.h"
+#include "Log.h"
 
 #include <SDL2/SDL.h>
 #include <Processing.NDI.Advanced.h>
@@ -27,16 +28,13 @@ NDIReceiver::NDIReceiver()
 
 	rx_desc.allow_video_fields = false;
 	rx_desc.bandwidth = NDIlib_recv_bandwidth_lowest;
-	rx_desc.color_format = NDIlib_recv_color_format_RGBX_RGBA;
+//	rx_desc.color_format = NDIlib_recv_color_format_RGBX_RGBA;
 	rx_desc.p_ndi_recv_name = "NDI Monitor 0";
 }
 
 NDIReceiver::~NDIReceiver()
 {
-	if (sync) 	NDIlib_framesync_destroy(sync);
-	if (rx)  	NDIlib_recv_destroy(rx);
-	if (finder) NDIlib_find_destroy(finder);
-	NDIlib_destroy();
+	Cleanup();
 }
 
 
@@ -52,19 +50,31 @@ bool NDIReceiver::Init()
 	return true;
 }
 
+void NDIReceiver::Cleanup()
+{
+	if (sync) 	NDIlib_framesync_destroy(sync);
+	if (rx)  	NDIlib_recv_destroy(rx);
+	if (finder) NDIlib_find_destroy(finder);
+	NDIlib_destroy();
+}
+
 bool NDIReceiver::Discover()
 {
 	if (!finder)
 		return false;
+	if (is_active)
+		return false;
 
-	sources = NDIlib_find_get_current_sources(finder, &src_count); // @suppress("Invalid arguments")
+	sources = NDIlib_find_get_current_sources(finder, &src_count);
 	if (!src_count)
 		return false;
 	rx = NDIlib_recv_create_v3(&rx_desc);
 	if (!rx)
 		return false;
-	NDIlib_recv_connect(rx, sources);
+	NDIlib_recv_connect(rx, sources + 0);
 	sync = NDIlib_framesync_create(rx);
+
+	Log::Info("Found NDI source");
 	is_active = true;
 	return true;
 }

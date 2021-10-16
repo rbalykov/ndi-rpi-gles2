@@ -16,8 +16,9 @@ public:
 	NDIReceiver();
 	~NDIReceiver();
 	bool Init();
+	void Cleanup();
+
 	bool Discover();
-	bool Capture();
 
 private:
 
