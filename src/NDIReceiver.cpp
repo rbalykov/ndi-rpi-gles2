@@ -1,9 +1,3 @@
-/*
- * CApplication.cpp
- *
- *  Created on: 15 окт. 2021 г.
- *      Author: rbalykov
- */
 
 #include <iostream>
 #include <stdint.h>
@@ -11,7 +5,6 @@
 #include "NDIReceiver.h"
 #include "Log.h"
 
-#include <SDL2/SDL.h>
 #include <Processing.NDI.Advanced.h>
 #include <Processing.NDI.Find.h>
 
@@ -27,8 +20,8 @@ NDIReceiver::NDIReceiver()
 	is_active = false;
 
 	rx_desc.allow_video_fields = false;
-	rx_desc.bandwidth = NDIlib_recv_bandwidth_lowest;
-//	rx_desc.color_format = NDIlib_recv_color_format_RGBX_RGBA;
+	rx_desc.bandwidth = NDIlib_recv_bandwidth_highest;
+//	rx_desc.color_format = NDIlib_recv_color_format_UYVY_BGRA;
 	rx_desc.p_ndi_recv_name = "NDI Monitor 0";
 }
 
@@ -36,7 +29,6 @@ NDIReceiver::~NDIReceiver()
 {
 	Cleanup();
 }
-
 
 bool NDIReceiver::Init()
 {
@@ -48,6 +40,11 @@ bool NDIReceiver::Init()
 		return false;
 
 	return true;
+}
+
+bool NDIReceiver::IsActive()
+{
+	return is_active;
 }
 
 void NDIReceiver::Cleanup()
@@ -74,7 +71,8 @@ bool NDIReceiver::Discover()
 	NDIlib_recv_connect(rx, sources + 0);
 	sync = NDIlib_framesync_create(rx);
 
-	Log::Info("Found NDI source");
+	DBG("Found NDI source");
 	is_active = true;
 	return true;
 }
+

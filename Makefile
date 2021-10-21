@@ -1,6 +1,6 @@
 PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-OBJS = sdlplayer.o NDIReceiver.o VideoMonitor.o Log.o
+OBJS = main.o NDIReceiver.o VideoMonitor.o Log.o
 
 #ifeq ($(BUILD_MODE),debug)
 #	CFLAGS += -g
@@ -10,7 +10,7 @@ OBJS = sdlplayer.o NDIReceiver.o VideoMonitor.o Log.o
 #	$(error Build mode $(BUILD_MODE) not supported by this Makefile)
 #endif
 
-CFLAGS += -lndi -lSDL2 -Iinclude
+CFLAGS +=  -L/opt/vc/lib -lbcm_host -lndi -lbrcmEGL -lbrcmGLESv2 -Iinclude -I/opt/vc/include
 
 all:	sdlplayer
 

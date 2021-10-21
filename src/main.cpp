@@ -1,7 +1,5 @@
 
-#include <VideoMonitor.h>
-#include <iostream>
-
+#include "VideoMonitor.h"
 #include "NDIReceiver.h"
 
 int main(int argc, char *argv[])

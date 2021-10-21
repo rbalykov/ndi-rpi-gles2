@@ -19,6 +19,7 @@ public:
 	void Cleanup();
 
 	bool Discover();
+	bool IsActive();
 
 private:
 
@@ -29,6 +30,7 @@ private:
 	NDIlib_framesync_instance_t sync;
 	const NDIlib_source_t * sources;
 	unsigned int src_count;
+
 };
 
 #endif /* NDIPLAYER_H_INCLUDED__ */

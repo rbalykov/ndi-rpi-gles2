@@ -8,12 +8,7 @@
 #include "Log.h"
 
 #include <iostream>
-#include "SDL2/SDL_error.h"
 
-void Log::SDLFault(std::string message)
-{
-	std::cerr << "SDL Failure: " << message << "\n" << SDL_GetError() << "\n";
-}
 
 void Log::Fault(std::string message)
 {
@@ -27,6 +22,11 @@ void Log::Alert(std::string message)
 
 void Log::Info(std::string message)
 {
-	std::cout << message << "\n";
+	std::clog << message << "\n";
 }
 
+
+void LOG_DEBUG()
+{
+	std::cerr << std::endl;
+}
