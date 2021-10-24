@@ -1,2 +1,2 @@
 # ndi-monitor
-SDL2-based Newtek NDI monitor
+Newtek NDI monitor based on OpenGL ES2
