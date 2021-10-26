@@ -1,5 +1,5 @@
 
-#include <iostream>
+//#include <iostream>
 
 #include "../include/DRM_Instance.h"
 #include "../include/EGL_Instance.h"
@@ -20,6 +20,8 @@ int main(int argc, char *argv[])
 //	else
 //		{cout << "NDI init failed" << endl; return -1; };
 
+	try
+	{
 	DRM_Instance drm;
 	if (drm.Init("/dev/dri/card0", NULL, 60, 100))
 		{cout << "DRM init done" << endl;}
@@ -45,8 +47,12 @@ int main(int argc, char *argv[])
 	else
 		{cout << "Monitor init failed" << endl; return -1; };
 
-	drm.Run(gbm, egl, monitor);
-}
+		drm.Run(gbm, egl, monitor);
+	}
+	catch (const std::system_error& e)
+	{
+		cerr << "system error: " << e.code() << " : " << e.what() << endl;
+	}
 
 	return 0;
 }

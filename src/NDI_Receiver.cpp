@@ -9,7 +9,7 @@
 #include <Processing.NDI.structs.h>
 
 #include "NDI_Receiver.h"
-
+#include <iostream>
 
 using namespace std;
 
@@ -23,7 +23,8 @@ NDI_Receiver::NDI_Receiver()
 	m_is_active = false;
 
 //	rx_desc.allow_video_fields = false;
-	m_rx_desc.bandwidth = NDIlib_recv_bandwidth_highest;
+//	m_rx_desc.bandwidth = NDIlib_recv_bandwidth_highest;
+	m_rx_desc.bandwidth = NDIlib_recv_bandwidth_lowest;
 	m_rx_desc.color_format = NDIlib_recv_color_format_fastest;
 	m_rx_desc.p_ndi_recv_name = "NDI Monitor 0";
 }
@@ -68,58 +69,62 @@ void NDI_Receiver::Cleanup()
 
 bool NDI_Receiver::Discover()
 {
-	std::unique_lock<std::mutex> lock(m_discover_lock, std::try_to_lock);
-	if (!lock.owns_lock())
+	if (!m_discover_lock.try_lock())
 		return false;
 
 	if (m_is_active)
-		return true;
+		goto success;
 
 	if (!m_finder)
 	{
 		m_finder = NDIlib_find_create_v2();
 		if (!m_finder)
-		{
-			return false;
-		}
+			goto failure;
 	}
 
 	unsigned int src_count;
 	m_sources = NDIlib_find_get_current_sources(m_finder, &src_count);
 	if (!src_count)
-	{
-		return false;
-	}
+		goto failure;
+
+	cerr << "have source" << endl;
 	m_recv = NDIlib_recv_create_v3(&m_rx_desc);
 	if (!m_recv)
-	{
-		return false;
-	}
+		goto failure;
+
+	cerr << "have recv" << endl;
 	NDIlib_recv_connect(m_recv, m_sources + 0);
-	m_avsync = NDIlib_avsync_create(m_recv);
-	if (m_avsync)
-	{
-		return false;
-	}
+//	m_avsync = NDIlib_avsync_create(m_recv);
+//	if (!m_avsync)
+//		goto failure;
+//
+//	cerr << "have avsync" << endl;
 
 	m_is_active = true;
 
+	success:
+	m_discover_lock.unlock();
 	return true;
+
+	failure:
+	m_discover_lock.unlock();
+	return false;
 }
 
 NDIlib_frame_type_e
 NDI_Receiver::Capture(NDIlib_video_frame_v2_t* vf,
 		NDIlib_audio_frame_v2_t* af, NDIlib_metadata_frame_t* mf)
 {
-	std::unique_lock<std::mutex> lock(m_discover_lock);
 	if (!m_is_active)
 		return NDIlib_frame_type_error;
 
+	m_discover_lock.lock();
 	NDIlib_frame_type_e result = NDIlib_recv_capture_v2(m_recv, vf, af, mf, timeout_ms);
 	if (result == NDIlib_frame_type_error)
 	{
 		Reset();
 	}
+	m_discover_lock.unlock();
 	return result;
 }
 
