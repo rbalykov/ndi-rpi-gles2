@@ -5,6 +5,7 @@
 #include "../include/EGL_Instance.h"
 #include "../include/GBM_Instance.h"
 #include "VideoMonitor.h"
+#include "NDI_Receiver.h"
 
 using namespace std;
 
@@ -13,8 +14,14 @@ int main(int argc, char *argv[])
 	(void) argc;
 	(void) argv;
 
+//	NDI_Receiver ndi;
+//	if (ndi.Init())
+//		{cout << "NDI init done" << endl;}
+//	else
+//		{cout << "NDI init failed" << endl; return -1; };
+
 	DRM_Instance drm;
-	if (drm.Init("/dev/dri/card0", "1366x768", 60, 100))
+	if (drm.Init("/dev/dri/card0", NULL, 60, 100))
 		{cout << "DRM init done" << endl;}
 	else
 		{cout << "DRM init failed" << endl; return -1; };
@@ -39,6 +46,7 @@ int main(int argc, char *argv[])
 		{cout << "Monitor init failed" << endl; return -1; };
 
 	drm.Run(gbm, egl, monitor);
+}
 
 	return 0;
 }

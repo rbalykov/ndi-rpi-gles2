@@ -3,26 +3,29 @@
 #include <stdint.h>
 
 #include "Log.h"
-
 #include <Processing.NDI.Advanced.h>
 #include <Processing.NDI.Find.h>
-#include "../include/NDI_Receiver.h"
+#include <Processing.NDI.Recv.h>
+#include <Processing.NDI.structs.h>
+
+#include "NDI_Receiver.h"
+
 
 using namespace std;
 
 NDI_Receiver::NDI_Receiver()
 {
-	finder = NULL;
-	sync = NULL;
-	rx = NULL;
-	sources = NULL;
-	src_count = 0;
-	is_active = false;
+	m_finder = NULL;
+	m_framesync = NULL;
+	m_avsync = NULL;
+	m_recv = NULL;
+	m_sources = NULL;
+	m_is_active = false;
 
-	rx_desc.allow_video_fields = false;
-	rx_desc.bandwidth = NDIlib_recv_bandwidth_highest;
-	rx_desc.color_format = NDIlib_recv_color_format_fastest;
-	rx_desc.p_ndi_recv_name = "NDI Monitor 0";
+//	rx_desc.allow_video_fields = false;
+	m_rx_desc.bandwidth = NDIlib_recv_bandwidth_highest;
+	m_rx_desc.color_format = NDIlib_recv_color_format_fastest;
+	m_rx_desc.p_ndi_recv_name = "NDI Monitor 0";
 }
 
 NDI_Receiver::~NDI_Receiver()
@@ -35,44 +38,103 @@ bool NDI_Receiver::Init()
 	if (!NDIlib_initialize())
 		return false;
 
-	finder = NDIlib_find_create_v2();
-	if (!finder)
-		return false;
-
 	return true;
 }
 
 bool NDI_Receiver::IsActive()
 {
-	return is_active;
+	return m_is_active;
+}
+
+void NDI_Receiver::Reset()
+{
+	m_is_active = false;
+	if (m_framesync) 	NDIlib_framesync_destroy(m_framesync);
+	if (m_avsync) NDIlib_avsync_destroy(m_avsync);
+	if (m_recv)  	NDIlib_recv_destroy(m_recv);
+	if (m_finder) NDIlib_find_destroy(m_finder);
+
+	m_framesync = NULL;
+	m_avsync = NULL;
+	m_recv = NULL;
+	m_finder = NULL;
 }
 
 void NDI_Receiver::Cleanup()
 {
-	if (sync) 	NDIlib_framesync_destroy(sync);
-	if (rx)  	NDIlib_recv_destroy(rx);
-	if (finder) NDIlib_find_destroy(finder);
+	Reset();
 	NDIlib_destroy();
 }
 
 bool NDI_Receiver::Discover()
 {
-	if (!finder)
-		return false;
-	if (is_active)
+	std::unique_lock<std::mutex> lock(m_discover_lock, std::try_to_lock);
+	if (!lock.owns_lock())
 		return false;
 
-	sources = NDIlib_find_get_current_sources(finder, &src_count);
+	if (m_is_active)
+		return true;
+
+	if (!m_finder)
+	{
+		m_finder = NDIlib_find_create_v2();
+		if (!m_finder)
+		{
+			return false;
+		}
+	}
+
+	unsigned int src_count;
+	m_sources = NDIlib_find_get_current_sources(m_finder, &src_count);
 	if (!src_count)
+	{
 		return false;
-	rx = NDIlib_recv_create_v3(&rx_desc);
-	if (!rx)
+	}
+	m_recv = NDIlib_recv_create_v3(&m_rx_desc);
+	if (!m_recv)
+	{
 		return false;
-	NDIlib_recv_connect(rx, sources + 0);
-	sync = NDIlib_framesync_create(rx);
+	}
+	NDIlib_recv_connect(m_recv, m_sources + 0);
+	m_avsync = NDIlib_avsync_create(m_recv);
+	if (m_avsync)
+	{
+		return false;
+	}
 
-	DBG("Found NDI source");
-	is_active = true;
+	m_is_active = true;
+
 	return true;
 }
+
+NDIlib_frame_type_e
+NDI_Receiver::Capture(NDIlib_video_frame_v2_t* vf,
+		NDIlib_audio_frame_v2_t* af, NDIlib_metadata_frame_t* mf)
+{
+	std::unique_lock<std::mutex> lock(m_discover_lock);
+	if (!m_is_active)
+		return NDIlib_frame_type_error;
+
+	NDIlib_frame_type_e result = NDIlib_recv_capture_v2(m_recv, vf, af, mf, timeout_ms);
+	if (result == NDIlib_frame_type_error)
+	{
+		Reset();
+	}
+	return result;
+}
+
+void NDI_Receiver::FreeVideo(NDIlib_video_frame_v2_t *vf)
+{
+	if (m_recv) NDIlib_recv_free_video_v2(m_recv, vf);
+}
+void NDI_Receiver::FreeAudio(NDIlib_audio_frame_v2_t *af)
+{
+	if (m_recv) NDIlib_recv_free_audio_v2(m_recv, af);
+}
+void NDI_Receiver::FreeMeta(NDIlib_metadata_frame_t *mf)
+{
+	if (m_recv) NDIlib_recv_free_metadata(m_recv, mf);
+}
+
+
 

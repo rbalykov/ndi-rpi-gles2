@@ -27,7 +27,7 @@ DEPS = $(OBJECTS:.o=.d)
 COMPILE_FLAGS = -std=c++11 -Wall -Wextra -g
 INCLUDES = -I include/ -I /usr/include -I /usr/include/libdrm -I /usr/local/include
 # Space-separated pkg-config libraries used by this project
-LIBS = -lGLESv2 -lEGL -ldrm -lgbm -lndi
+LIBS = -lGLESv2 -lEGL -ldrm -lgbm -lndi -lpthread
 
 .PHONY: default_target
 default_target: release
