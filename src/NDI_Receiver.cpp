@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 #include "Log.h"
-#include <Processing.NDI.Advanced.h>
+#include <Processing.NDI.Lib.h>
 #include <Processing.NDI.Find.h>
 #include <Processing.NDI.Recv.h>
 #include <Processing.NDI.structs.h>
@@ -51,7 +51,7 @@ void NDI_Receiver::Reset()
 {
 	m_is_active = false;
 	if (m_framesync) 	NDIlib_framesync_destroy(m_framesync);
-	if (m_avsync) NDIlib_avsync_destroy(m_avsync);
+//	if (m_avsync) NDIlib_avsync_destroy(m_avsync);
 	if (m_recv)  	NDIlib_recv_destroy(m_recv);
 	if (m_finder) NDIlib_find_destroy(m_finder);
 

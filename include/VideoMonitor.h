@@ -27,6 +27,7 @@ class VideoFrame
 {
 public:
 	VideoFrame();
+	virtual ~VideoFrame(){};
 
 	void Capture(NDIlib_video_frame_v2_t *vf);
 
@@ -83,6 +84,7 @@ class VideoStub: public VideoFrame
 {
 public:
 	VideoStub(const char * file, GLuint w, GLuint h);
+	virtual ~VideoStub(){};
 };
 
 

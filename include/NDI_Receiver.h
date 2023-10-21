@@ -8,7 +8,7 @@
 #ifndef NDIPLAYER_H_INCLUDED__
 #define NDIPLAYER_H_INCLUDED__
 
-#include <Processing.NDI.Advanced.h>
+#include <Processing.NDI.Lib.h>
 #include <mutex>
 
 using namespace std;
@@ -38,7 +38,7 @@ private:
 	NDIlib_recv_create_v3_t m_rx_desc;
 	NDIlib_recv_instance_t m_recv;
 	NDIlib_framesync_instance_t m_framesync;
-	NDIlib_avsync_instance_t m_avsync;
+//	NDIlib_avsync_instance_t m_avsync;
 	const NDIlib_source_t * m_sources;
 
 	mutex m_discover_lock;
