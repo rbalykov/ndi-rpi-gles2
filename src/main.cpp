@@ -1,10 +1,11 @@
 
-#include <iostream>
+//#include <iostream>
 
 #include "../include/DRM_Instance.h"
 #include "../include/EGL_Instance.h"
 #include "../include/GBM_Instance.h"
 #include "VideoMonitor.h"
+#include "NDI_Receiver.h"
 
 using namespace std;
 
@@ -13,8 +14,16 @@ int main(int argc, char *argv[])
 	(void) argc;
 	(void) argv;
 
+//	NDI_Receiver ndi;
+//	if (ndi.Init())
+//		{cout << "NDI init done" << endl;}
+//	else
+//		{cout << "NDI init failed" << endl; return -1; };
+
+	try
+	{
 	DRM_Instance drm;
-	if (drm.Init("/dev/dri/card0", "1366x768", 60, 100))
+	if (drm.Init("/dev/dri/card0", NULL, 60, 100))
 		{cout << "DRM init done" << endl;}
 	else
 		{cout << "DRM init failed" << endl; return -1; };
@@ -38,7 +47,12 @@ int main(int argc, char *argv[])
 	else
 		{cout << "Monitor init failed" << endl; return -1; };
 
-	drm.Run(gbm, egl, monitor);
+		drm.Run(gbm, egl, monitor);
+	}
+	catch (const std::system_error& e)
+	{
+		cerr << "system error: " << e.code() << " : " << e.what() << endl;
+	}
 
 	return 0;
 }

@@ -108,7 +108,7 @@ bool EGL_Instance::Init (const GBM_Instance &gbm)
 	printf("  version: \"%s\"\n", eglQueryString(display, EGL_VERSION));
 	printf("  vendor: \"%s\"\n", eglQueryString(display, EGL_VENDOR));
 	printf("  client extensions: \"%s\"\n", egl_exts_client);
-	printf("  display extensions: \"%s\"\n", egl_exts_dpy);
+//	printf("  display extensions: \"%s\"\n", egl_exts_dpy);
 	printf("===================================\n");
 
 	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
@@ -149,7 +149,7 @@ bool EGL_Instance::Init (const GBM_Instance &gbm)
 	printf("  shading language version: \"%s\"\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 	printf("  vendor: \"%s\"\n", glGetString(GL_VENDOR));
 	printf("  renderer: \"%s\"\n", glGetString(GL_RENDERER));
-	printf("  extensions: \"%s\"\n", gl_exts);
+//	printf("  extensions: \"%s\"\n", gl_exts);
 	printf("===================================\n");
 
 	get_proc_gl(GL_OES_EGL_image, glEGLImageTargetTexture2DOES, PFNGLEGLIMAGETARGETTEXTURE2DOESPROC);
@@ -255,12 +255,12 @@ bool EGL_Instance::create_framebuffer(struct gbm_bo *bo, struct framebuffer *fb)
 	}
 
 	EGLint khr_image_attrs[17] = {
-		EGL_WIDTH, gbm_bo_get_width(bo),
-		EGL_HEIGHT, gbm_bo_get_height(bo),
+		EGL_WIDTH, (EGLint)gbm_bo_get_width(bo),
+		EGL_HEIGHT, (EGLint)gbm_bo_get_height(bo),
 		EGL_LINUX_DRM_FOURCC_EXT, (int)gbm_bo_get_format(bo),
 		EGL_DMA_BUF_PLANE0_FD_EXT, fd,
 		EGL_DMA_BUF_PLANE0_OFFSET_EXT, 0,
-		EGL_DMA_BUF_PLANE0_PITCH_EXT, gbm_bo_get_stride(bo),
+		EGL_DMA_BUF_PLANE0_PITCH_EXT, (EGLint)gbm_bo_get_stride(bo),
 		EGL_NONE, EGL_NONE,	/* modifier lo */
 		EGL_NONE, EGL_NONE,	/* modifier hi */
 		EGL_NONE,

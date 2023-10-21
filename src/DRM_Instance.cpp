@@ -392,7 +392,10 @@ int DRM_Instance::Run (GBM_Instance &gbm, EGL_Instance &egl, VideoMonitor &mon)
 	fd_set fds;
 	drmEventContext evctx = {
 			.version = 2,
+			.vblank_handler = NULL,
 			.page_flip_handler = page_flip_handler,
+			.page_flip_handler2 = NULL,
+			.sequence_handler = NULL,
 	};
 	struct gbm_bo *bo;
 	struct drm_fb *fb;
